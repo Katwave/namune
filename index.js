@@ -2,46 +2,29 @@
 const express = require("express");
 const app = express();
 const http = require("http").createServer(app);
-
-// Middlewares and configs
-
-const database_name = process.env.DATABASE_NAME || "example-db";
 const sharedDependencies = require("./shared.deps");
-
 const MidsConfigs = require("./config/mids-configs");
-const mid_configs = new MidsConfigs(app);
-console.log("database_name:", database_name);
 
 // Change the configuration below to suit your needs
+const mid_configs = new MidsConfigs(app);
 mid_configs.registerMiddlewares({
-  dbConfig: { database_name }, // Configure your database
+  dbConfig: { database_name: process.env.DATABASE_NAME || "example-db" }, // Configure your database
   usePassportLogin: true, // Change to false if you don't need passport-local strategy
   passportConfig: {
     userModel: sharedDependencies.models.User, // Make sure this is included in shared.deps.js file
-    // Change usernameField to your relevant field if needed (e.g. username).
-    // Also change relevant logic in routes/auth/api.routes.js to match then chosen username field
-    usernameField: "email",
+    usernameField: "email", // Change relevant logic in routes/auth/api.routes.js to match your username field
   },
 });
 
-// Importing pre-defined routes
-const api = require("./routes/api");
+// Load Routes
+app.use(`/v1/`, require("./routes/api"));
 
-// use pre-defined routers
-app.use(`/v1/`, api);
-
-// Resource not found 404
-
-// "/{*any}" wildcard for express v5
 // This will fire if the requested route/url is not defined
 app.get("/{*any}", (req, res) => {
-  res.json({ err: "That API route is not found!" });
+  return res.json({ err: "That API route is not found!" });
 });
 
-// Setting up the port
-const Port = process.env.PORT || 8000; // change to 5000 when using react.js/deploying
-
-// Listening to the server
+const Port = process.env.PORT || 8000;
 http.listen(Port, () => {
-  console.log(`Listening on PORT ${Port}...`);
+  console.log(`Server running on port ${Port}`);
 });
