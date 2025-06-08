@@ -3,6 +3,9 @@
 const fs = require("fs");
 const path = require("path");
 
+const namunePkg = require(path.join(__dirname, "..", "package.json"));
+const namuneVersion = namunePkg.version;
+
 function createProjectStructure(targetDir = process.cwd()) {
   const folders = ["routes", "models"];
   const files = {
@@ -27,7 +30,7 @@ DATABASE_NAME=myapp
   "author": "",
   "license": "ISC"
   "dependencies": {
-    "namune": "^1.0.2",
+    "namune": "^${namuneVersion}",
   },
 }
     `,
