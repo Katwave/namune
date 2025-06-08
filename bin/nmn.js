@@ -2,6 +2,7 @@
 
 const fs = require("fs");
 const path = require("path");
+const { exec } = require("child_process");
 
 const namunePkg = require(path.join(__dirname, "..", "package.json"));
 const namuneVersion = namunePkg.version;
@@ -84,6 +85,22 @@ http.listen(PORT, () => {
   });
 
   console.log("✅ Project initialized!");
+  runNpmInstall(targetDir);
+}
+
+function runNpmInstall(targetDir) {
+  console.log("📦 Installing dependencies...");
+  exec("npm install", { cwd: targetDir }, (error, stdout, stderr) => {
+    if (error) {
+      console.error(`❌ Error installing dependencies: ${error.message}`);
+      return;
+    }
+    if (stderr) {
+      console.error(`⚠️ npm stderr: ${stderr}`);
+    }
+    console.log(stdout);
+    console.log("✅ Dependencies installed.");
+  });
 }
 
 const command = process.argv[2];
