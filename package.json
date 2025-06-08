@@ -1,0 +1,31 @@
+{
+  "name": "namune",
+  "version": "1.0.0",
+  "description": "A Quick Setup Express API.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node index.js",
+    "dev": "nodemon index.js"
+  },
+  "keywords": [
+    "Express API",
+    "JavaScript API",
+    "Backend API",
+    "Quick API"
+  ],
+  "author": "Katlego Mangoale",
+  "license": "ISC",
+  "dependencies": {
+    "bcryptjs": "^3.0.2",
+    "connect-mongo": "^5.1.0",
+    "dotenv": "^16.5.0",
+    "express": "^5.1.0",
+    "express-session": "^1.18.1",
+    "mongoose": "^8.15.1",
+    "nodemon": "^3.1.10",
+    "passport": "^0.7.0",
+    "passport-local": "^1.0.0",
+    "body-parser": "^2.2.0"
+  }
+}
