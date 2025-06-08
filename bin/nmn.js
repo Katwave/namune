@@ -7,11 +7,21 @@ const { exec } = require("child_process");
 const namunePkg = require(path.join(__dirname, "..", "package.json"));
 const namuneVersion = namunePkg.version;
 
-function createProjectStructure(targetDir = process.cwd()) {
+function createProjectStructure(projectName) {
+  const targetDir = path.resolve(process.cwd(), projectName);
+
+  if (fs.existsSync(targetDir)) {
+    console.error(`❌ Folder "${projectName}" already exists.`);
+    process.exit(1);
+  }
+
+  fs.mkdirSync(targetDir);
+  console.log(`📁 Created project folder: ${projectName}`);
+
   const folders = ["routes", "models"];
 
   const packageJson = {
-    name: process.argv[3] || "example-project",
+    name: projectName,
     version: "1.0.0",
     description: "",
     main: "index.js",
@@ -32,15 +42,15 @@ function createProjectStructure(targetDir = process.cwd()) {
     ".gitignore": "node_modules\n",
 
     ".env": `MONGODB_URI=mongodb://localhost:27017
-DATABASE_NAME=myapp    
-    `,
+DATABASE_NAME=myapp
+`,
 
     "custom.deps.js": `module.exports = {
   global: {},
   models: {},
   utils: {}
 };
-    `,
+`,
 
     "index.js": `require("dotenv").config();
 const express = require("express");
@@ -65,27 +75,25 @@ http.listen(PORT, () => {
   console.log(\`Server running on port \${PORT}\`);
 });
 `,
+    "package.json": JSON.stringify(packageJson, null, 2),
   };
 
-  files["package.json"] = JSON.stringify(packageJson, null, 2);
-
+  // Create folders
   folders.forEach((folder) => {
     const fullPath = path.join(targetDir, folder);
-    if (!fs.existsSync(fullPath)) {
-      fs.mkdirSync(fullPath);
-      console.log(`Created folder: ${folder}`);
-    }
+    fs.mkdirSync(fullPath);
+    console.log(`📂 Created folder: ${folder}`);
   });
 
+  // Create files
   Object.entries(files).forEach(([filename, content]) => {
     const fullPath = path.join(targetDir, filename);
-    if (!fs.existsSync(fullPath)) {
-      fs.writeFileSync(fullPath, content);
-      console.log(`Created file: ${filename}`);
-    }
+    fs.writeFileSync(fullPath, content);
+    console.log(`📄 Created file: ${filename}`);
   });
 
-  console.log("✅ Project initialized!");
+  console.log("✅ Project structure initialized.");
+
   runNpmInstall(targetDir);
 }
 
@@ -105,9 +113,16 @@ function runNpmInstall(targetDir) {
 }
 
 const command = process.argv[2];
+const projectName = process.argv[3];
 
 if (command === "create") {
-  createProjectStructure();
+  if (!projectName) {
+    console.error(
+      "❌ Please provide a project name.\nUsage: nmn create <projectname>"
+    );
+    process.exit(1);
+  }
+  createProjectStructure(projectName);
 } else {
-  console.log("Unknown command. Usage: nmn create");
+  console.log("Unknown command. Usage: nmn create <projectname>");
 }
