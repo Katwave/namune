@@ -1,3 +1,4 @@
 /node_modules
 /hide
 /.env
+/package-lock.json

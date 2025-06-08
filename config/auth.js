@@ -4,7 +4,9 @@ const ensureAuthenticated = (req, res, next) => {
     return next();
   }
   // If the user is not authenticated, redirect them to the login page
-  return res.status(401).json({ error: "You are not logged in!" });
+  return res
+    .status(401)
+    .json({ message: "You are not logged in!", success: false });
 };
 
 module.exports = ensureAuthenticated;

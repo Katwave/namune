@@ -18,7 +18,9 @@ mid_configs.registerMiddlewares({
   usePassportLogin: true, // Change to false if you don't need passport-local strategy
   passportConfig: {
     userModel: sharedDependencies.models.User, // Make sure this is included in shared.deps.js file
-    usernameField: "email", // Change to your relevant field if needed (e.g. username)
+    // Change usernameField to your relevant field if needed (e.g. username).
+    // Also change relevant logic in routes/auth/api.routes.js to match then chosen username field
+    usernameField: "email",
   },
 });
 
