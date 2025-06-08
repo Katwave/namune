@@ -8,13 +8,38 @@ function createProjectStructure(targetDir = process.cwd()) {
   const files = {
     ".gitignore": "node_modules\n",
 
-    ".env": `
-MONGODB_URI=mongodb://localhost:27017
+    ".env": `MONGODB_URI=mongodb://localhost:27017
 DATABASE_NAME=myapp    
     `,
 
-    "index.js": `
-require("dotenv").config();
+    "package.json": `
+{
+  "name": "${process.argv[3] ? process.argv[3] : "example-project"}",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node index.js",
+    "dev": "nodemon index.js"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC"
+  "dependencies": {
+    "namune": "^1.0.2",
+  },
+}
+    `,
+
+    "custom.deps.js": `module.exports = {
+  global: {},
+  models: {},
+  utils: {}
+};
+    `,
+
+    "index.js": `require("dotenv").config();
 const express = require("express");
 const app = express();
 const http = require("http").createServer(app);

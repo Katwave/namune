@@ -33,6 +33,14 @@ yarn global add namune
 
 ```bash
 nmn create
+# or
+nmn create myproject
+```
+
+```bash
+npm run dev
+# or for production
+npm start
 ```
 
 ```javascript
@@ -61,11 +69,20 @@ http.listen(PORT, () => {
 });
 ```
 
-### Create a `.env` file:
+### `.env` file:
 
 ```env
 MONGODB_URI=mongodb://localhost:27017
 DATABASE_NAME=myapp
+```
+
+```javascript
+// custom.deps.js
+module.exports = {
+  global: {},
+  models: {},
+  utils: {},
+};
 ```
 
 ---
@@ -122,6 +139,7 @@ Routes are automatically loaded from the `routes` directory. Use this pattern:
 class ExampleRoute {
   constructor(router, dependencies) {
     this.router = router;
+    this.dependencies = dependencies;
   }
 
   exampleHandler(req, res) {

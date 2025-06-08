@@ -6,6 +6,39 @@ function loadRoutes(router, baseDir = __dirname) {
   // Create a sub-router for prefixed routes
   const subRouter = express.Router();
 
+  // Load built-in shared dependencies
+  const sharedDependencies = require("../shared.deps");
+
+  // Try to load custom.deps.js from user's project root
+  let customDependencies = {};
+  const customDepsPath = path.join(process.cwd(), "custom.deps.js");
+
+  if (fs.existsSync(customDepsPath)) {
+    try {
+      customDependencies = require(customDepsPath);
+    } catch (err) {
+      console.warn("Failed to load custom.deps.js:", err.message);
+    }
+  }
+
+  // Merge shared and custom dependencies
+  const mergedDependencies = {
+    ...sharedDependencies,
+    ...customDependencies,
+    global: {
+      ...sharedDependencies.global,
+      ...(customDependencies.global || {}),
+    },
+    models: {
+      ...sharedDependencies.models,
+      ...(customDependencies.models || {}),
+    },
+    utils: {
+      ...sharedDependencies.utils,
+      ...(customDependencies.utils || {}),
+    },
+  };
+
   try {
     const items = fs.readdirSync(baseDir, { withFileTypes: true });
 
@@ -27,14 +60,12 @@ function loadRoutes(router, baseDir = __dirname) {
 
           const RouteModule = require(fullPath);
 
-          const sharedDependencies = require("../shared.deps");
-
           // Initialize routes
           // Handle both class and function exports
           if (typeof RouteModule === "function") {
             if (RouteModule.prototype) {
               if (RouteModule.prototype.registerRoutes) {
-                const instance = new RouteModule(subRouter, sharedDependencies);
+                const instance = new RouteModule(subRouter, mergedDependencies);
 
                 // Apply prefix to all routes
                 const folderPrefix = path.basename(path.dirname(fullPath));
@@ -59,7 +90,7 @@ function loadRoutes(router, baseDir = __dirname) {
               }
             } else {
               // Regular function export
-              RouteModule(router, sharedDependencies);
+              RouteModule(router, mergedDependencies);
             }
           } else {
             console.error(
