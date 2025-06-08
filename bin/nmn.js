@@ -9,31 +9,30 @@ const namuneVersion = namunePkg.version;
 
 function createProjectStructure(targetDir = process.cwd()) {
   const folders = ["routes", "models"];
+
+  const packageJson = {
+    name: process.argv[3] || "example-project",
+    version: "1.0.0",
+    description: "",
+    main: "index.js",
+    scripts: {
+      test: 'echo "Error: no test specified" && exit 1',
+      start: "node index.js",
+      dev: "nodemon index.js",
+    },
+    keywords: [],
+    author: "",
+    license: "ISC",
+    dependencies: {
+      namune: `^${namuneVersion}`,
+    },
+  };
+
   const files = {
     ".gitignore": "node_modules\n",
 
     ".env": `MONGODB_URI=mongodb://localhost:27017
 DATABASE_NAME=myapp    
-    `,
-
-    "package.json": `
-{
-  "name": "${process.argv[3] ? process.argv[3] : "example-project"}",
-  "version": "1.0.0",
-  "description": "",
-  "main": "index.js",
-  "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "node index.js",
-    "dev": "nodemon index.js"
-  },
-  "keywords": [],
-  "author": "",
-  "license": "ISC"
-  "dependencies": {
-    "namune": "^${namuneVersion}",
-  },
-}
     `,
 
     "custom.deps.js": `module.exports = {
@@ -67,6 +66,8 @@ http.listen(PORT, () => {
 });
 `,
   };
+
+  files["package.json"] = JSON.stringify(packageJson, null, 2);
 
   folders.forEach((folder) => {
     const fullPath = path.join(targetDir, folder);
