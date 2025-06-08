@@ -22,14 +22,18 @@
 ## Installation
 
 ```bash
-npm install namune
+npm install -g namune
 # or
-yarn add namune
+yarn global add namune
 ```
 
 ---
 
 ## Quick Start
+
+```bash
+nmn create
+```
 
 ```javascript
 // index.js

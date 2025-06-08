@@ -1,6 +1,6 @@
 {
   "name": "namune",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "A Quick Setup Express API.",
   "main": "index.js",
   "scripts": {
@@ -48,5 +48,8 @@
     "config/",
     "routes/",
     "models/"
-  ]
+  ],
+  "bin": {
+    "nmn": "./bin/nmn.js"
+  }
 }
