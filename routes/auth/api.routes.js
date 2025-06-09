@@ -50,10 +50,9 @@ class Auth {
         data: savedUser,
       });
     } catch (err) {
-      console.error("Unable to save user:", err.errorResponse.errmsg);
-      if (err.errorResponse.code === 11000) {
-        console.log("onFailRegister:", onFailRegister);
+      console.error("Error to save user:", err);
 
+      if (err.errorResponse && err.errorResponse.code === 11000) {
         onFailRegister &&
           onFailRegister({
             message: "Account already exists!",
