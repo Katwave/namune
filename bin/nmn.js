@@ -43,10 +43,11 @@ function createProjectStructure(projectName) {
 
     ".env": `DATABASE_NAME=myapp\n`,
 
-    "custom.deps.js": `module.exports = {
+    "deps.js": `module.exports = {
   global: {},
   models: {},
-  utils: {}
+  utils: {},
+  hooks: {}
 };
 `,
 
@@ -117,6 +118,30 @@ http.listen(PORT, () => {
 
   fs.writeFileSync(path.join(fooRouteDir, "api.routes.js"), fooRouteContent);
   console.log("📄 Created file: routes/foo/api.routes.js");
+
+  // Create the user model
+  const userModelDir = path.join(targetDir, "models");
+  fs.mkdirSync(userModelDir, { recursive: true });
+  const userModelContent = `const mongoose = require("mongoose");
+  
+  const userSchema = new mongoose.Schema(
+    {
+      fullName: { type: String, required: true },
+      password: { type: String, required: true }, Required for auth
+      email: { type: String, required: true, unique: true },
+      accountActive: { type: Boolean, default: false }, // Required for passport-local strategy
+      token: { type: String }, // Required for auth
+    },
+    {
+      timestamps: true,
+    }
+  );
+  
+  module.exports = mongoose.model("User", userSchema);
+  `;
+
+  fs.writeFileSync(path.join(userModelDir, "User.js"), userModelContent);
+  console.log("📄 Created file: models/User.js");
 
   console.log("✅ Project structure initialized.\n");
 

@@ -1,6 +1,13 @@
 const LocalStrategy = require("passport-local").Strategy;
 const bcrypt = require("bcryptjs");
 
+/**
+ *
+ * @description Initialize Passport Local Strategy
+ * @param {*} passport Passport library
+ * @param {*} User User model
+ * @param {*} usernameField The username field to use for authentication
+ */
 const initialize = (passport, User, usernameField) => {
   passport.use(
     new LocalStrategy(

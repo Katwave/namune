@@ -2,3 +2,5 @@ tests/
 node_modules
 .env
 package-lock.json
+todo
+/hooks

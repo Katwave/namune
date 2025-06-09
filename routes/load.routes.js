@@ -2,8 +2,14 @@ const fs = require("fs");
 const path = require("path");
 const express = require("express");
 
-const userDepsPath = path.resolve(process.cwd(), "custom.deps.js");
+const userDepsPath = path.resolve(process.cwd(), "deps.js");
 
+/**
+ *
+ * @description Load Routes - Load all routes available
+ * @param {*} router The express router instance
+ * @param {*} baseDir The directory to the routes folder
+ */
 function loadRoutes(router, baseDir = __dirname) {
   if (!fs.existsSync(baseDir)) {
     console.warn(`⚠️ Skipping missing directory: ${baseDir}`);
@@ -23,7 +29,7 @@ function loadRoutes(router, baseDir = __dirname) {
     try {
       customDependencies = require(userDepsPath);
     } catch (err) {
-      console.error("⚠️ Failed to load custom.deps.js:", err);
+      console.error("⚠️ Failed to load deps.js:", err);
     }
   }
 

@@ -77,11 +77,12 @@ DATABASE_NAME=myapp
 ```
 
 ```javascript
-// custom.deps.js
+// deps.js
 module.exports = {
   global: {},
   models: {},
   utils: {},
+  hooks: {},
 };
 ```
 
@@ -118,7 +119,7 @@ options = {
 
 Middleware that checks if a user is authenticated. Returns 401 if not.
 
-### Authentication Routes
+### Authentication Routes (Can't be overwritten)
 
 - `POST /v1/auth/register` - User registration
 - `POST /v1/auth/verify/account` - Account verification
@@ -129,6 +130,51 @@ Middleware that checks if a user is authenticated. Returns 401 if not.
 - `POST /v1/auth/delete-account` - Account deletion
 
 ---
+
+### Hooks
+
+##### `onSuccessRegister(response = {success: boolean, message: string, data: any})`
+
+##### `onFailRegister(response = {success: boolean, message: string, data: any})`
+
+##### `onSuccessVerifyUser(response = {success: boolean, message: string, data: any})`
+
+##### `onFailVerifyUser(response = {success: boolean, message: string, data: any})`
+
+##### `onSuccessLogin(response = {success: boolean, message: string, data: any})`
+
+##### `onFailLogin(response = {success: boolean, message: string, data: any})`
+
+##### `onSuccessLogout(response = {success: boolean, message: string, data: any})`
+
+##### `onFailLogout(response = {success: boolean, message: string, data: any})`
+
+##### `onSuccessDeleteUser(response = {success: boolean, message: string, data: any})`
+
+##### `onFailDeleteUser(response = {success: boolean, message: string, data: any})`
+
+##### `onSuccessVerify(response = {success: boolean, message: string, data: any})`
+
+##### `onFailVerify(response = {success: boolean, message: string, data: any})`
+
+##### `onSuccessChangePassword(response = {success: boolean, message: string, data: any})`
+
+##### `onFailChangePassword(response = {success: boolean, message: string, data: any})`
+
+Example
+
+```javascript
+// deps.js
+module.exports = {
+  global: {},
+  models: {},
+  utils: {},
+  hooks: {
+    onSuccessRegister: yourCustomMethod, // Fires when user successfully registers (/auth/register)
+    onFailRegister: yourCustomMethod, // Fires when user fails to register (/auth/register)
+  },
+};
+```
 
 ## Route Management
 
@@ -215,6 +261,14 @@ class CustomRoute {
 }
 
 module.exports = CustomRoute;
+```
+
+### Generating Hash (for any string)
+
+```javascript
+// namune/utils/gen-hash.util.js
+const genHash = require("namune/utils/gen-hash.util.js");
+const hash = genHash({ password: "12345" });
 ```
 
 ### Minimal Working Example
