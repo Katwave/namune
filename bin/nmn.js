@@ -117,7 +117,7 @@ http.listen(PORT, () => {
   module.exports = ExampleRoute;
   `;
 
-  fs.writeFileSync(path.join(fooDir, "api.routes.js"), fooRouteContent);
+  fs.writeFileSync(path.join(fooRouteDir, "api.routes.js"), fooRouteContent);
   console.log("📄 Created file: routes/health/api.routes.js");
 
   console.log("✅ Project structure initialized.\n");
