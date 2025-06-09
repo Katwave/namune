@@ -41,9 +41,7 @@ function createProjectStructure(projectName) {
   const files = {
     ".gitignore": "node_modules\n",
 
-    ".env": `MONGODB_URI=mongodb://localhost:27017
-DATABASE_NAME=myapp
-`,
+    ".env": `DATABASE_NAME=myapp\n`,
 
     "custom.deps.js": `module.exports = {
   global: {},
