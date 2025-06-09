@@ -62,7 +62,7 @@ mid_configs.registerMiddlewares({
   dbConfig: { database_name: process.env.DATABASE_NAME || "myapp" },
   usePassportLogin: true,
   passportConfig: {
-    userModel: require("namune/models/User"),
+    userModel: require("./models/User"),
     usernameField: "email",
   },
 });
@@ -127,7 +127,7 @@ http.listen(PORT, () => {
   const userSchema = new mongoose.Schema(
     {
       fullName: { type: String, required: true },
-      password: { type: String, required: true }, Required for auth
+      password: { type: String, required: true }, // Required for auth
       email: { type: String, required: true, unique: true },
       accountActive: { type: Boolean, default: false }, // Required for passport-local strategy
       token: { type: String }, // Required for auth
