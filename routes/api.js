@@ -5,6 +5,9 @@ const router = express.Router();
 require("dotenv").config();
 
 // All available routes
-require("./load.routes")(router);
+require("./load.routes")(router, [
+  path.join(__dirname, "routes"), // User-defined routes
+  path.join(require.resolve("namune"), "..", "routes"), // Library routes
+]);
 
 module.exports = router;

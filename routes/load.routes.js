@@ -2,76 +2,60 @@ const fs = require("fs");
 const path = require("path");
 const express = require("express");
 
-function loadRoutes(router, baseDir = __dirname) {
-  // Create a sub-router for prefixed routes
-  const subRouter = express.Router();
-
-  // Load built-in shared dependencies
-  const sharedDependencies = require("../shared.deps");
-
-  // Try to load custom.deps.js from user's project root
+function loadRoutes(router, baseDirs = [__dirname]) {
+  // Try loading user-defined custom dependencies
   let customDependencies = {};
-  const customDepsPath = path.join(process.cwd(), "custom.deps.js");
+  const userDepsPath = path.resolve(process.cwd(), "custom.deps.js");
 
-  if (fs.existsSync(customDepsPath)) {
+  if (fs.existsSync(userDepsPath)) {
     try {
-      customDependencies = require(customDepsPath);
+      customDependencies = require(userDepsPath);
     } catch (err) {
-      console.warn("Failed to load custom.deps.js:", err.message);
+      console.error("⚠️ Failed to load custom.deps.js:", err);
     }
   }
 
-  // Merge shared and custom dependencies
-  const mergedDependencies = {
+  // Load shared deps from the library
+  const sharedDependencies = require("../shared.deps");
+
+  // Merge internal and user-defined dependencies
+  const deps = {
     ...sharedDependencies,
     ...customDependencies,
-    global: {
-      ...sharedDependencies.global,
-      ...(customDependencies.global || {}),
-    },
-    models: {
-      ...sharedDependencies.models,
-      ...(customDependencies.models || {}),
-    },
-    utils: {
-      ...sharedDependencies.utils,
-      ...(customDependencies.utils || {}),
-    },
   };
 
-  try {
-    const items = fs.readdirSync(baseDir, { withFileTypes: true });
+  // Loop through all base directories
+  baseDirs.forEach((baseDir) => {
+    try {
+      const items = fs.readdirSync(baseDir, { withFileTypes: true });
 
-    items.forEach((item) => {
-      try {
-        const fullPath = path.join(baseDir, item.name);
+      items.forEach((item) => {
+        try {
+          const fullPath = path.join(baseDir, item.name);
 
-        // If it's a directory, search recursively
-        if (item.isDirectory()) {
-          loadRoutes(router, fullPath); // Recurse
-        }
+          if (item.isDirectory()) {
+            // Recurse into subdirectories
+            loadRoutes(router, [fullPath]);
+          } else if (item.name === "api.routes.js") {
+            // Clear cache in development
+            if (!process.env.NODE_ENV && !process.env.STAGING_ENV) {
+              delete require.cache[require.resolve(fullPath)];
+            }
 
-        // If it's the target file (api.routes.js)
-        else if (item.name === "api.routes.js") {
-          // 4. Clear cache in development
-          if (!process.env.NODE_ENV && !process.env.STAGING_ENV) {
-            delete require.cache[require.resolve(fullPath)];
-          }
+            const RouteModule = require(fullPath);
 
-          const RouteModule = require(fullPath);
+            // Use a sub-router to apply a route prefix (based on folder name)
+            const subRouter = express.Router();
 
-          // Initialize routes
-          // Handle both class and function exports
-          if (typeof RouteModule === "function") {
-            if (RouteModule.prototype) {
-              if (RouteModule.prototype.registerRoutes) {
-                const instance = new RouteModule(subRouter, mergedDependencies);
+            // Handle class or function exports
+            if (typeof RouteModule === "function") {
+              if (
+                RouteModule.prototype &&
+                RouteModule.prototype.registerRoutes
+              ) {
+                const instance = new RouteModule(subRouter, deps);
 
-                // Apply prefix to all routes
-                const folderPrefix = path.basename(path.dirname(fullPath));
-                router.use(`/${folderPrefix}`, subRouter);
-
-                // Auto-bind all methods (So that "this" is accessible inside the Class methods)
+                // Bind all methods to preserve 'this'
                 Object.getOwnPropertyNames(Object.getPrototypeOf(instance))
                   .filter(
                     (prop) =>
@@ -82,31 +66,30 @@ function loadRoutes(router, baseDir = __dirname) {
                     instance[method] = instance[method].bind(instance);
                   });
 
+                // Register routes with a folder-based prefix
+                const folderPrefix = path.basename(path.dirname(fullPath));
+                router.use(`/${folderPrefix}`, subRouter);
+
                 instance.registerRoutes();
               } else {
-                throw new Error(
-                  'Missing required function/method "registerRoutes"'
-                ); // Crash app if base dir is inaccessible
+                // Function-based export
+                RouteModule(router, deps);
               }
             } else {
-              // Regular function export
-              RouteModule(router, mergedDependencies);
+              console.error(
+                `Invalid route module at ${fullPath}: Must export a class or function`
+              );
             }
-          } else {
-            console.error(
-              `Invalid route module at ${fullPath}: Must export a class or function`
-            );
           }
+        } catch (err) {
+          console.error(`Trace ${item.name}: \n`, err);
         }
-      } catch (err) {
-        console.error(`Trace ${item.name}: \n `, err);
-        // Continue loading other routes
-      }
-    });
-  } catch (err) {
-    console.error("Fatal route loading error:", err);
-    throw err; // Crash app if base dir is inaccessible
-  }
+      });
+    } catch (err) {
+      console.error("❌ Fatal route loading error:", err);
+      throw err;
+    }
+  });
 }
 
 module.exports = loadRoutes;
