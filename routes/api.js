@@ -7,7 +7,7 @@ const router = express.Router();
 require("dotenv").config();
 
 // All available routes
-loadRoutes(router, path.join(__dirname, "routes")); // User project routes
-loadRoutes(router, path.join(require.resolve("namune"), "..", "routes")); // Namune internal routes
+require("./load.routes")(router);
+require("./load.routes")(router, path.resolve(process.cwd(), "routes"));
 
 module.exports = router;

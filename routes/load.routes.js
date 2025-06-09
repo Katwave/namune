@@ -2,7 +2,14 @@ const fs = require("fs");
 const path = require("path");
 const express = require("express");
 
+const userDepsPath = path.resolve(process.cwd(), "custom.deps.js");
+
 function loadRoutes(router, baseDir = __dirname) {
+  if (!fs.existsSync(baseDir)) {
+    console.warn(`⚠️ Skipping missing directory: ${baseDir}`);
+    return; // Skip loading if directory doesn't exist
+  }
+
   // Create a sub-router for prefixed routes
   const subRouter = express.Router();
 
@@ -11,7 +18,7 @@ function loadRoutes(router, baseDir = __dirname) {
 
   // Load user's custom dependencies if available
   let customDependencies = {};
-  const userDepsPath = path.resolve(process.cwd(), "custom.deps.js");
+
   if (fs.existsSync(userDepsPath)) {
     try {
       customDependencies = require(userDepsPath);
@@ -20,7 +27,22 @@ function loadRoutes(router, baseDir = __dirname) {
     }
   }
 
-  const deps = { ...sharedDependencies, ...customDependencies };
+  const deps = {
+    ...sharedDependencies,
+    ...customDependencies,
+    global: {
+      ...sharedDependencies.global,
+      ...(customDependencies.global || {}),
+    },
+    models: {
+      ...sharedDependencies.models,
+      ...(customDependencies.models || {}),
+    },
+    utils: {
+      ...sharedDependencies.utils,
+      ...(customDependencies.utils || {}),
+    },
+  };
 
   try {
     const items = fs.readdirSync(baseDir, { withFileTypes: true });
