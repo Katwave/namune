@@ -1,5 +1,6 @@
 const express = require("express");
 const path = require("path");
+const loadRoutes = require("./load.routes");
 const router = express.Router();
 
 // Requiring the dotenv module
