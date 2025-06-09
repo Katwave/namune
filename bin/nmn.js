@@ -95,7 +95,7 @@ http.listen(PORT, () => {
   // Create routes/foo/api.routes.js
   const fooRouteDir = path.join(targetDir, "routes", "foo");
   fs.mkdirSync(fooRouteDir, { recursive: true });
-  const fooRouteContent = `class FooRoute {
+  const fooRouteContent = `class FooRoutes {
     constructor(router, dependencies) {
       this.router = router;
       this.dependencies = dependencies;
@@ -114,7 +114,7 @@ http.listen(PORT, () => {
     }
   }
 
-  module.exports = FooRoute;
+  module.exports = FooRoutes;
   `;
 
   fs.writeFileSync(path.join(fooRouteDir, "api.routes.js"), fooRouteContent);
