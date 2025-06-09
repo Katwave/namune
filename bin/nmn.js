@@ -92,7 +92,35 @@ http.listen(PORT, () => {
     console.log(`📄 Created file: ${filename}`);
   });
 
-  console.log("✅ Project structure initialized.");
+  // Create routes/foo/api.routes.js
+  const fooRouteDir = path.join(targetDir, "routes", "foo");
+  fs.mkdirSync(fooRouteDir, { recursive: true });
+  const fooRouteContent = `class ExampleRoute {
+    constructor(router, dependencies) {
+      this.router = router;
+      this.dependencies = dependencies;
+    }
+
+    getExample(req, res) {
+      return res
+        .status(200)
+        .json({ success: true, message: "Successfully found foo!" });
+    }
+
+    //   Add your other methods
+
+    registerRoutes() {
+      this.router.get("/", this.getExample.bind(this));
+    }
+  }
+
+  module.exports = ExampleRoute;
+  `;
+
+  fs.writeFileSync(path.join(fooDir, "api.routes.js"), fooRouteContent);
+  console.log("📄 Created file: routes/health/api.routes.js");
+
+  console.log("✅ Project structure initialized.\n");
 
   runNpmInstall(targetDir);
 }
