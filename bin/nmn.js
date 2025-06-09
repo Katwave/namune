@@ -95,13 +95,13 @@ http.listen(PORT, () => {
   // Create routes/foo/api.routes.js
   const fooRouteDir = path.join(targetDir, "routes", "foo");
   fs.mkdirSync(fooRouteDir, { recursive: true });
-  const fooRouteContent = `class ExampleRoute {
+  const fooRouteContent = `class FooRoute {
     constructor(router, dependencies) {
       this.router = router;
       this.dependencies = dependencies;
     }
 
-    getExample(req, res) {
+    getFoo(req, res) {
       return res
         .status(200)
         .json({ success: true, message: "Successfully found foo!" });
@@ -110,11 +110,11 @@ http.listen(PORT, () => {
     //   Add your other methods
 
     registerRoutes() {
-      this.router.get("/", this.getExample.bind(this));
+      this.router.get("/", this.getFoo.bind(this));
     }
   }
 
-  module.exports = ExampleRoute;
+  module.exports = FooRoute;
   `;
 
   fs.writeFileSync(path.join(fooRouteDir, "api.routes.js"), fooRouteContent);
