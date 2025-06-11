@@ -11,8 +11,17 @@ mid_configs.registerMiddlewares({
   dbConfig: { database_name: process.env.DATABASE_NAME || "example-db" }, // Configure your database
   usePassportLogin: true, // Change to false if you don't need passport-local strategy
   passportConfig: {
-    userModel: sharedDependencies.models.User, // Make sure this is included in shared.deps.js file
-    usernameField: "email", // Change relevant logic in routes/auth/api.routes.js to match your username field
+    strategyList: [
+      {
+        strategyName: "user-local",
+        model: sharedDependencies.models.User, // Make sure this is included in shared.deps.js file
+        usernameField: "email", // Change relevant logic in routes/auth/api.routes.js to match your username field
+        verifyAccount: (user) => {
+          if (!user.accountActive) return "Please verify your email first.";
+          return null;
+        },
+      },
+    ],
   },
 });
 

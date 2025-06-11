@@ -65,8 +65,19 @@ mid_configs.registerMiddlewares({
   dbConfig: { database_name: process.env.DATABASE_NAME || "myapp" },
   usePassportLogin: true,
   passportConfig: {
-    userModel: require("./models/User"),
-    usernameField: "email",
+    // Add your seperate custom local strategies for login authentication to the list
+    // Seperate strategy name with one dash (e.g user-local)
+    strategyList: [
+      {
+        strategyName: "user-local",
+        model: require("./models/User"),
+        usernameField: "email", // Change relevant logic in routes/auth/api.routes.js to match your username field
+        verifyAccount: (user) => {  // For additional validation
+          if (!user.accountActive) return "Please verify your email first.";
+          return null;
+        },
+      },
+    ],
   },
 });
 

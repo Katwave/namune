@@ -207,7 +207,7 @@ class Auth {
     const onFailLogin = this.dependencies.hooks.onFailLogin;
 
     this.dependencies.global.passport.authenticate(
-      "local",
+      "user-local",
       (err, user, info) => {
         if (err) return next(err);
 

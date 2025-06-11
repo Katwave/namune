@@ -4,6 +4,7 @@ const express_session = require("express-session");
 const MongoStore = require("connect-mongo");
 const bodyParser = require("body-parser");
 const passport = require("passport");
+const pl = require("./pl");
 
 class MidsConfigs {
   constructor(app) {
@@ -168,6 +169,17 @@ class MidsConfigs {
     }
   }
 
+  /**
+   *
+   * @param {Object} options  {dbConfig: {database_name: string}, passportConfig: {strategyList: []}, usePassportLogin: boolean}
+   * @param {Object} options.dbConfig - Database configuration (e.g., {database_name: 'exampleDB'})
+   * @param {Object} options.passportConfig - Passport Local Strategy configuration (e.g., { strategyList: [{strategyName, model, usernameField, verifyAccount}] } )
+   * @param {Boolean} options.usePassportLogin - To use passport local strategy (e.g., true)
+   * @param {String} options.passportConfig.strategyList[].strategyName - Unique name for the strategy (e.g., 'user-local', 'admin-local')
+   * @param {Mongoose.Model} options.passportConfig.strategyList[].model - The Mongoose model (User, Admin, etc.)
+   * @param {String} [options.passportConfig.strategyList[].usernameField='email'] - Field to use as the username
+   * @param {Function} [options.passportConfig.strategyList[].verifyAccount] - Optional function to check extra conditions (e.g., isActive)
+   */
   // Register All Middlewares
   registerMiddlewares(
     options = {
@@ -175,8 +187,7 @@ class MidsConfigs {
         database_name: null,
       },
       passportConfig: {
-        userModel: null,
-        usernameField: null,
+        strategyList: [],
       },
       usePassportLogin: false,
     }
@@ -198,12 +209,22 @@ class MidsConfigs {
     this.bd_ps_mid();
 
     // Passport and Flash (express sessions)
+    // options.usePassportLogin &&
+    //   this.run_passport_config(
+    //     "passport-login",
+    //     options.passportConfig.userModel,
+    //     options.passportConfig.usernameField
+    //   );
+
     options.usePassportLogin &&
-      this.run_passport_config(
-        "passport-login",
-        options.passportConfig.userModel,
-        options.passportConfig.usernameField
-      );
+      options.passportConfig.strategyList.forEach((strategy) => {
+        pl(passport, {
+          strategyName: strategy.strategyName || "user-local",
+          model: strategy.model,
+          usernameField: strategy.usernameField || "email",
+          verifyAccount: strategy.verifyAccount,
+        });
+      });
 
     // Express session
     this.exp_sess(this.mongoose_uri(options.dbConfig.database_name));

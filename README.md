@@ -19,6 +19,7 @@
 - 🖂 Mail Sending
 - < > Advanced Pagination
 - 💳 Payments with payfast
+- 📁 Cloud File Uploads (To AWS S3)
 
 ---
 
@@ -68,8 +69,19 @@ options = {
   dbConfig: { database_name: "myapp" },
   usePassportLogin: true,
   passportConfig: {
-    userModel: UserModel,
-    usernameField: "email",
+    // Add your seperate custom local strategies for login authentication to the list
+    // Make sure to seperate strategyName with one dash (e.g user-local)
+    strategyList: [
+      {
+        strategyName: "user-local",
+        model: sharedDependencies.models.User, // Make sure this is included in shared.deps.js file
+        usernameField: "email", // Change relevant logic in routes/auth/api.routes.js to match your username field
+        verifyAccount: (user) => {
+          if (!user.accountActive) return "Please verify your email first.";
+          return null;
+        },
+      },
+    ],
   },
 };
 ```
