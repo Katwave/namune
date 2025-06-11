@@ -45,13 +45,11 @@ const sendMail = (
     },
     (err, info) => {
       if (err) {
-        console.log(
-          "Failed to send mail (Check internet connection): " + info + ""
-        );
+        console.log("Failed to send mail (Could be your internet connection)");
         handlers.err(err);
       } else {
         console.log("Send mail success: " + info + "");
-        handlers.success();
+        handlers.success(info);
       }
     }
   );

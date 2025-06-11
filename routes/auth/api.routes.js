@@ -28,10 +28,13 @@ class Auth {
     const onFailRegister = this.dependencies.hooks.onFailRegister;
 
     try {
-      const { hash } = this.dependencies.utils.genHash({
+      const { hash } = await this.dependencies.utils.genHash({
         password: body.password,
       });
-      const newUser = new User({ password: hash, ...body });
+
+      const token = this.dependencies.global.randomString.generate();
+
+      const newUser = new User({ ...body, password: hash, token });
 
       // Saving the new buyer to the database
       const savedUser = await newUser.save();
