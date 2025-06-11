@@ -8,6 +8,7 @@ const namunePkg = require(path.join(__dirname, "..", "package.json"));
 const namuneVersion = namunePkg.version;
 
 function createProjectStructure(projectName) {
+  // Create a project folder
   const targetDir = path.resolve(process.cwd(), projectName);
 
   if (fs.existsSync(targetDir)) {
@@ -20,6 +21,7 @@ function createProjectStructure(projectName) {
 
   const folders = ["routes", "models"];
 
+  // For creating package.json file
   const packageJson = {
     name: projectName,
     version: "1.0.0",
@@ -38,6 +40,7 @@ function createProjectStructure(projectName) {
     },
   };
 
+  // Files to dynamically create with boilerplate
   const files = {
     ".gitignore": "node_modules\n",
 

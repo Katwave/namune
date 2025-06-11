@@ -4,14 +4,37 @@ const userModelPath = path.resolve(process.cwd(), "models", "User.js");
 
 const sharedDependencies = {
   global: {
-    authenticate: require("./config/auth"),
-    randomString: require("randomstring"),
-    bcrypt: require("bcryptjs"),
-    passport: require("passport"),
+    get authenticate() {
+      return require("./config/auth");
+    },
+    get randomString() {
+      return require("randomstring");
+    },
+    get bcrypt() {
+      return require("bcryptjs");
+    },
+    get passport() {
+      return require("passport");
+    },
   },
-  models: { User: fs.existsSync(userModelPath) && require(userModelPath) },
+  models: {
+    get User() {
+      return fs.existsSync(userModelPath) && require(userModelPath);
+    },
+  },
   utils: {
-    genHash: require("./utils/gen-hash.util"),
+    get genHash() {
+      return require("./utils/gen-hash");
+    },
+    get sendMail() {
+      return require("./utils/sendMail");
+    },
+    get paginate() {
+      return require("./utils/paginate");
+    },
+    get cloudFileUpload() {
+      return require("./utils/cloudFileUpload");
+    },
   },
   hooks: {}, // Empty this before publish to npm
 };

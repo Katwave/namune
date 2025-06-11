@@ -16,6 +16,8 @@
 - 🔒 Passport.js integration for local authentication
 - 🚀 Production-ready error handling and security practices
 - 🧩 Modular architecture for easy extension
+- 🖂 Mail Sending
+- < > Advanced Pagination
 
 ---
 
@@ -38,52 +40,10 @@ nmn create myproject
 ```
 
 ```bash
+# For hot reload when you save changes
 npm run dev
-# or for production
+# or for manual reload
 npm start
-```
-
-```javascript
-// index.js
-require("dotenv").config();
-const express = require("express");
-const app = express();
-const http = require("http").createServer(app);
-const MidsConfigs = require("namune/config/mids-configs");
-
-const mid_configs = new MidsConfigs(app);
-mid_configs.registerMiddlewares({
-  dbConfig: { database_name: process.env.DATABASE_NAME || "myapp" },
-  usePassportLogin: true,
-  passportConfig: {
-    userModel: require("namune/models/User"),
-    usernameField: "email",
-  },
-});
-
-app.use("/v1/", require("namune/routes/api"));
-
-const PORT = process.env.PORT || 8000;
-http.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`);
-});
-```
-
-### `.env` file:
-
-```env
-MONGODB_URI=mongodb://localhost:27017
-DATABASE_NAME=myapp
-```
-
-```javascript
-// deps.js
-module.exports = {
-  global: {},
-  models: {},
-  utils: {},
-  hooks: {},
-};
 ```
 
 ---
@@ -133,33 +93,37 @@ Middleware that checks if a user is authenticated. Returns 401 if not.
 
 ### Hooks
 
-##### `onSuccessRegister(response = {success: boolean, message: string, data: any})`
+##### AUTH Hooks: Returns a response
 
-##### `onFailRegister(response = {success: boolean, message: string, data: any})`
+Response Structure: {success: boolean, message: string, data: any}
 
-##### `onSuccessVerifyUser(response = {success: boolean, message: string, data: any})`
+##### `onSuccessRegister`
 
-##### `onFailVerifyUser(response = {success: boolean, message: string, data: any})`
+##### `onFailRegister`
 
-##### `onSuccessLogin(response = {success: boolean, message: string, data: any})`
+##### `onSuccessVerifyUser`
 
-##### `onFailLogin(response = {success: boolean, message: string, data: any})`
+##### `onFailVerifyUser`
 
-##### `onSuccessLogout(response = {success: boolean, message: string, data: any})`
+##### `onSuccessLogin`
 
-##### `onFailLogout(response = {success: boolean, message: string, data: any})`
+##### `onFailLogin`
 
-##### `onSuccessDeleteUser(response = {success: boolean, message: string, data: any})`
+##### `onSuccessLogout`
 
-##### `onFailDeleteUser(response = {success: boolean, message: string, data: any})`
+##### `onFailLogout`
 
-##### `onSuccessVerify(response = {success: boolean, message: string, data: any})`
+##### `onSuccessDeleteUser`
 
-##### `onFailVerify(response = {success: boolean, message: string, data: any})`
+##### `onFailDeleteUser`
 
-##### `onSuccessChangePassword(response = {success: boolean, message: string, data: any})`
+##### `onSuccessVerify`
 
-##### `onFailChangePassword(response = {success: boolean, message: string, data: any})`
+##### `onFailVerify`
+
+##### `onSuccessChangePassword`
+
+##### `onFailChangePassword`
 
 Example
 
@@ -170,8 +134,8 @@ module.exports = {
   models: {},
   utils: {},
   hooks: {
-    onSuccessRegister: yourCustomMethod, // Fires when user successfully registers (/auth/register)
-    onFailRegister: yourCustomMethod, // Fires when user fails to register (/auth/register)
+    onSuccessRegister: yourCustomFunction, // Fires when user successfully registers (/auth/register)
+    onFailRegister: yourCustomFunction, // Fires when user fails to register (/auth/register)
   },
 };
 ```
@@ -193,7 +157,7 @@ class ExampleRoute {
   }
 
   registerRoutes() {
-    this.router.get("/", this.exampleHandler.bind(this));
+    this.router.get("/", this.exampleHandler);
   }
 }
 
@@ -266,9 +230,204 @@ module.exports = CustomRoute;
 ### Generating Hash (for any string)
 
 ```javascript
-// namune/utils/gen-hash.util.js
-const genHash = require("namune/utils/gen-hash.util.js");
+// namune/utils/gen-hash.js
+const genHash = require("namune/utils/gen-hash.js");
 const hash = genHash({ password: "12345" });
+```
+
+### Send an email (Uses nodemailer)
+
+```javascript
+// namune/utils/sendMail.js
+const sendMail = require("namune/utils/sendMail.js");
+
+// Optional: Transport options. (Below is the dafault setup)
+const transportOptions = {
+  host: "mail.smtp2go.com",
+  port: 80, // 25, 587, and 8025 can also be used (or 2525).
+};
+
+// IMPRTANT:
+// Make sure you have USER and PASS in the .env file for authenticating your email for transport
+
+// Options
+const from = "fromexample@gmail.co";
+const to = "toexample@gmail.co";
+const subject = "Verify account";
+const subject = "Verify account";
+const attachments = [
+  {
+    filename: "emailBanner.png",
+    path: process.cwd() + "/public/img/emailBanner.png",
+    cid: "emailBanner@domiher.com",
+  },
+];
+const html = "<h1> Hi, please verify your account </h1>";
+
+const mailOptions = {
+  from,
+  to,
+  subject,
+  attachments,
+  html,
+};
+
+sendMail(mailOptions);
+```
+
+### Lazy-Load Dependencies to avoid circular loop errors
+
+```javascript
+module.exports = {
+  global: {},
+  models: {},
+  utils: {
+    get myUtil() {
+      return require("./utils/myUtil");
+    },
+  },
+  hooks: {
+    get onFailRegister() {
+      return require("./hooks/register.fail");
+    },
+  },
+};
+```
+
+### Pagination
+
+##### Input
+
+```javascript
+// For non-routes
+const paginate = require('namune/utils/paginate');
+
+// For routes (api.routes.js)
+// const paginate = this.dependencies.utils.paginate
+
+const data = [
+  { user: { name: "Alice" }, score: 91 },
+  { user: { name: "Charlie" }, score: 82 },
+  { user: { name: "Bob" }, score: 75 },
+];
+
+// Sort by nested property `user.name`
+const result = paginate(data, {
+  page: 1,
+  limit: 2,
+  sortBy: 'user.name',
+  order: 'asc'
+  filterFn: (item) => item.score > 50
+});
+
+console.log(result);
+```
+
+##### ✅ Output Sample
+
+```bash
+{
+  data: [
+    { user: { name: "Alice" }, score: 91 },
+    { user: { name: "Bob" }, score: 75 }
+  ],
+  paginationMeta: {
+    page: 1,
+    limit: 2,
+    totalItems: 3,
+    totalPages: 2,
+    hasNext: true,
+    hasPrevious: false,
+    nextPage: 2,
+    previousPage: null
+  }
+}
+```
+
+###### Options
+
+`page: Number` Page to go to - Optional (Default is 0)
+`limit: Number` Number of items - Optional (Default is 10)
+`sortBy: String` Sort the data. Allows for nested properties - Optional (Default is null)
+`order` Order the Items by "asc" or "desc" - Optional (Default is "asc")
+`filterFn` Filter Function to filter data - Optional (Default is null)
+
+### Upload Files to cloud (Uses AWS S3)
+
+```javascript
+// Non routes
+const { uploadBase64ImageToS3 } = require("namune/utils/cloudFileUpload");
+
+// For routes (api.routes.js)
+// const {uploadBase64ImageToS3} = this.dependencies.utils.cloudFileUpload
+
+let base64 = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAA..."; // A base64 image
+uploadBase64ImageToS3(base64).then(console.log);
+```
+
+##### Options (Second Parameter after base64)
+
+`ACL: String` For Access Control - Optional (Default is "public-read")
+`appendKey: String` Folder in bucket - Optional (Default is "image-upload")
+`region: String` Your S3 bucket region - Optional (Default is "eu-north-1")
+
+#### Other functions (supports multipart/form-data)
+
+`uploadImage`
+`uploadVideo`
+`uploadAudio`
+
+Example
+
+```javascript
+const multer = require("multer");
+const upload = multer(); // memoryStorage by default
+
+// ... Class logic for routes
+registerRoutes(){
+  this.router.post("/upload/image", upload.single("file"), async (req, res) => {
+    const result = await this.dependencies.utils.cloudFileUpload.uploadImage(req.file);
+    res.json(result);
+  });
+
+  this.router.post("/upload/video", upload.single("file"), async (req, res) => {
+    const result = await this.dependencies.utils.cloudFileUpload.uploadVideo(req.file);
+    res.json(result);
+  });
+
+  this.router.post("/upload/audio", upload.single("file"), async (req, res) => {
+    const result = await this.dependencies.utils.cloudFileUpload.uploadAudio(req.file);
+    res.json(result);
+  });
+}
+```
+
+##### Options for the above functions:
+
+`buffer: Buffer` - File buffer
+`originalName: String` - Original file name (e.g. image.jpg)
+`folder: String` - Folder in bucket (e.g. images, audio, videos)
+`options: {ACL: String, ContentType: String}` - Optional: ACL, ContentType
+
+#### Delete uploaded files
+
+`deleteFile` - Expects a file param
+`deleteMultipleFiles` - Expects an array of AWS keys (e.g. ['images/image.jpg', 'images/image2.jpg'])
+`deleteAllFilesInFolder` - Expects a prefix (e.g. "images/user123/")
+
+##### Options
+
+`file: {Key: String, VersionId: any, Location: String}` - File object uploaded. versionId is optional
+`keys: String[]` - Array of Keys
+
+Example
+
+```js
+// Delete specific files
+await deleteMultipleFiles(["images/abc.jpg", "videos/test.mp4"]);
+
+// Delete everything under a folder
+await deleteAllFilesInFolder("images/user123/");
 ```
 
 ### Minimal Working Example
@@ -286,7 +445,7 @@ mids.registerMiddlewares({
   dbConfig: { database_name: "myapp" },
   usePassportLogin: true,
   passportConfig: {
-    userModel: require("namune/models/User"),
+    userModel: require("./models/User"),
     usernameField: "email",
   },
 });

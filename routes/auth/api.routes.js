@@ -50,8 +50,6 @@ class Auth {
         data: savedUser,
       });
     } catch (err) {
-      console.error("Error to save user:", err);
-
       if (err.errorResponse && err.errorResponse.code === 11000) {
         onFailRegister &&
           onFailRegister({
@@ -66,6 +64,7 @@ class Auth {
         });
       }
 
+      console.error("Error to save user:", err);
       onFailRegister &&
         onFailRegister({
           message: "Unable to save user!",
