@@ -18,6 +18,7 @@
 - 🧩 Modular architecture for easy extension
 - 🖂 Mail Sending
 - < > Advanced Pagination
+- 💳 Payments with payfast
 
 ---
 
