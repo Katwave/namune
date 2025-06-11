@@ -170,12 +170,27 @@ module.exports = ExampleRoute;
 
 ### Environment Variables
 
+##### GENERAL
+
 | Variable        | Default                   | Description               |
 | --------------- | ------------------------- | ------------------------- |
 | `PORT`          | 8000                      | Server port               |
 | `MONGODB_URI`   | mongodb://localhost:27017 | MongoDB connection string |
 | `DATABASE_NAME` | example-db                | Database name             |
 | `NODE_ENV`      | development               | Runtime environment       |
+
+##### PAYMENTS (Using Payfast)
+
+| Variable                             | Default                  | Description                           |
+| ------------------------------------ | ------------------------ | ------------------------------------- |
+| `NGROK_SERVER_URL`                   | http://localhost:8000/v1 | ngrok server url                      |
+| `NGROK_CLIENT_URL`                   | http://localhost:3000    | ngrok client url                      |
+| `PAYFAST_PASS_PHRASE`                | undefined                | Payfast Pass Phrase                   |
+| `PAYFAST_MERCHANT_ID`                | 10000100                 | Payfast Merchant ID                   |
+| `PAYFAST_MERCHANT_KEY`               | 46f0cd694581a            | Payfast Merchant Key                  |
+| `PROD_API_URL`                       | undefined                | Production Api URL                    |
+| `PAYFAST_PAYMENT_CONFIRM_EMAIL`      | undefined                | Email to send payment confirmation to |
+| `process.env.PAYFAST_PAYMENT_METHOD` | cc                       | Payfast Payment method                |
 
 ### Middleware Options
 
@@ -428,6 +443,69 @@ await deleteMultipleFiles(["images/abc.jpg", "videos/test.mp4"]);
 
 // Delete everything under a folder
 await deleteAllFilesInFolder("images/user123/");
+```
+
+### Payments Using Payfast
+
+Example
+
+```js
+// In Routes context
+
+// Making the payment signature
+this.router.get("/order", (req, res) => {
+  const payfast = this.dependencies.utils.payfast;
+
+  const { data, html } = payfast.sig({
+    firstname: order.customerFirstName, // Required
+    lastname: order.customerLastName, // Required
+    email: order.customerEmail, // Required
+    payment_id: `${order.orderNumber}`, // Required
+    amount: `${order.totalPrice}`, // Required
+    order_num: `#${order.orderNumber}`, // Required
+    phone: order.customerPhoneNumber, // Optional
+    address: order.customerAddress, // Optional
+  });
+
+  return res.status(200).json({
+    success: true,
+    message: "Successful!",
+    data: { data, html },
+  });
+
+  /* Data returned from payfast.sig:
+  merchant_id,
+  merchant_key,
+  return_url,
+  cancel_url,
+  notify_url,
+  name_first,
+  name_last,
+  email_address,
+  m_payment_id,
+  amount,
+  item_name,
+  email_confirmation,
+  confirmation_address,
+  payment_method,
+  signature
+  */
+});
+
+// Request from Payfast after cancellation or successful payment
+this.router.post("/notify", async (req, res) => {
+  const { m_payment_id, amount_gross } = await req.body;
+  const payfast = this.dependencies.utils.payfast;
+
+  // Notify/Confirmation
+  payfast.confirm(req, amount_gross);
+
+  return res.status(200).json({
+    success: true,
+    message: "Successful!",
+    data: null,
+  });
+});
 ```
 
 ### Minimal Working Example

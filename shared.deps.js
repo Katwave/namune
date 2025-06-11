@@ -35,6 +35,9 @@ const sharedDependencies = {
     get cloudFileUpload() {
       return require("./utils/cloudFileUpload");
     },
+    get payfast() {
+      return require("./utils/payfast/main");
+    },
   },
   hooks: {}, // Empty this before publish to npm
 };
