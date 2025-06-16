@@ -83,6 +83,11 @@ mid_configs.registerMiddlewares({
 
 app.use("/v1/", require("namune/routes/api"));
 
+// This will fire if the requested route/url is not defined
+app.get("/{*any}", (req, res) => {
+  return res.json({ success: false, message: "That API route is not found!", data: null });
+});
+
 const PORT = process.env.PORT || 8000;
 http.listen(PORT, () => {
   console.log(\`Server running on port \${PORT}\`);
@@ -117,13 +122,13 @@ http.listen(PORT, () => {
     getFoo(req, res) {
       return res
         .status(200)
-        .json({ success: true, message: "Successfully found foo!" });
+        .json({ success: true, message: "Successfully found foo!", data: null });
     }
 
     //   Add your other methods
 
     registerRoutes() {
-      this.router.get("/", this.getFoo.bind(this));
+      this.router.get("/", this.getFoo);
     }
   }
 

@@ -216,15 +216,24 @@ class MidsConfigs {
     //     options.passportConfig.usernameField
     //   );
 
-    options.usePassportLogin &&
-      options.passportConfig.strategyList.forEach((strategy) => {
-        pl(passport, {
+    if (
+      options.passportConfig &&
+      options.passportConfig?.strategyList?.length > 0 &&
+      options.usePassportLogin
+    ) {
+      const strategies = options.passportConfig.strategyList.map((strategy) => {
+        pl.createLocalStrategy(passport, {
           strategyName: strategy.strategyName || "user-local",
           model: strategy.model,
           usernameField: strategy.usernameField || "email",
           verifyAccount: strategy.verifyAccount,
         });
+
+        return { strategyName: strategy.strategyName, model: strategy.model };
       });
+
+      pl.sdUser(passport, strategies);
+    }
 
     // Express session
     this.exp_sess(this.mongoose_uri(options.dbConfig.database_name));

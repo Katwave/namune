@@ -1,6 +1,8 @@
 const LocalStrategy = require("passport-local").Strategy;
 const bcrypt = require("bcryptjs");
 
+const strategyModelMap = {};
+
 /**
  * @param {Object} passport - The passport instance
  * @param {Object} options
@@ -13,6 +15,9 @@ function createLocalStrategy(
   passport,
   { strategyName, model, usernameField = "email", verifyAccount }
 ) {
+  // Register strategy
+  strategyModelMap[strategyName] = model;
+
   passport.use(
     strategyName,
     new LocalStrategy({ usernameField }, async (username, password, done) => {
@@ -48,21 +53,69 @@ function createLocalStrategy(
       }
     })
   );
+}
 
-  // Serialization & Deserialization (you can override this if needed)
-  passport.serializeUser((user, done) =>
-    done(null, { id: user.id, strategy: strategyName })
-  );
+/**
+ * Configures passport serializeUser and deserializeUser for multiple strategies
+ * @param {*} passport - Passport instance
+ * @param {Array} strategies - Array of strategy configurations [{ strategyName, model }]
+ */
+const sdUser = (passport, strategies = []) => {
+  // Create a map of models for quick lookup
+  const strategyMap = new Map();
+  strategies.forEach(({ strategyName, model }) => {
+    strategyMap.set(model, strategyName);
+  });
 
+  // Serialize user with strategy info
+  passport.serializeUser((user, done) => {
+    try {
+      // Find which strategy this user belongs to
+      let strategyName = null;
+      for (const [model, name] of strategyMap.entries()) {
+        if (user instanceof model) {
+          strategyName = name;
+          break;
+        }
+      }
+
+      if (!strategyName) {
+        throw new Error("No matching strategy found for user type");
+      }
+
+      done(null, {
+        id: user._id,
+        strategy: strategyName,
+      });
+    } catch (err) {
+      done(err);
+    }
+  });
+
+  // Create a reverse map for deserialization
+  const modelMap = new Map();
+  strategies.forEach(({ strategyName, model }) => {
+    modelMap.set(strategyName, model);
+  });
+
+  // Deserialize using correct model based on strategy
   passport.deserializeUser(async ({ id, strategy }, done) => {
     try {
-      const user = await model.findById(id);
-      if (!user) return done(new Error("User not found"));
+      const Model = modelMap.get(strategy);
+      if (!Model) {
+        return done(new Error(`No model found for strategy: ${strategy}`));
+      }
+
+      const user = await Model.findById(id);
+      if (!user) {
+        return done(new Error("User not found"));
+      }
+
       done(null, user);
     } catch (err) {
       done(err);
     }
   });
-}
+};
 
-module.exports = createLocalStrategy;
+module.exports = { createLocalStrategy, sdUser };
