@@ -61,59 +61,30 @@ function createLocalStrategy(
  * @param {Array} strategies - Array of strategy configurations [{ strategyName, model }]
  */
 const sdUser = (passport, strategies = []) => {
-  // Create a map of models for quick lookup
-  const strategyMap = new Map();
-  strategies.forEach(({ strategyName, model }) => {
-    strategyMap.set(model, strategyName);
-  });
+  const strategyMap = new Map(strategies.map((s) => [s.model, s.strategyName]));
+  const modelMap = new Map(strategies.map((s) => [s.strategyName, s.model]));
 
-  // Serialize user with strategy info
   passport.serializeUser((user, done) => {
-    try {
-      // Find which strategy this user belongs to
-      let strategyName = null;
-      for (const [model, name] of strategyMap.entries()) {
-        if (user instanceof model) {
-          strategyName = name;
-          break;
-        }
+    for (const [model, strategyName] of strategyMap.entries()) {
+      if (user instanceof model) {
+        return done(null, { id: user._id, strategy: strategyName });
       }
-
-      if (!strategyName) {
-        throw new Error("No matching strategy found for user type");
-      }
-
-      done(null, {
-        id: user._id,
-        strategy: strategyName,
-      });
-    } catch (err) {
-      done(err);
     }
+    return done(new Error("No matching strategy found for user type"));
   });
 
-  // Create a reverse map for deserialization
-  const modelMap = new Map();
-  strategies.forEach(({ strategyName, model }) => {
-    modelMap.set(strategyName, model);
-  });
+  passport.deserializeUser(async (sessionData, done) => {
+    if (!sessionData) return done(null, null); // Add this critical line
 
-  // Deserialize using correct model based on strategy
-  passport.deserializeUser(async ({ id, strategy }, done) => {
     try {
+      const { id, strategy } = sessionData;
       const Model = modelMap.get(strategy);
-      if (!Model) {
-        return done(new Error(`No model found for strategy: ${strategy}`));
-      }
+      if (!Model) return done(new Error(`Invalid strategy: ${strategy}`));
 
-      const user = await Model.findById(id);
-      if (!user) {
-        return done(new Error("User not found"));
-      }
-
-      done(null, user);
+      const user = await Model.findById(id).exec();
+      return done(null, user || null); // Return null if user not found
     } catch (err) {
-      done(err);
+      return done(err);
     }
   });
 };

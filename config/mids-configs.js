@@ -164,6 +164,18 @@ class MidsConfigs {
 
       app.use(passport.initialize());
       app.use(passport.session());
+
+      // Error handling middleware
+      app.use((err, req, res, next) => {
+        if (
+          err.message.includes("User not found") ||
+          err.message.includes("No matching strategy")
+        ) {
+          req.logout(); // Clear invalid session
+          return next(); // Continue without user
+        }
+        next(err);
+      });
     } else {
       throw Error("Mids-Configs Error: Passport or Express library not found!");
     }
