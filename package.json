@@ -1,6 +1,6 @@
 {
   "name": "namune",
-  "version": "1.0.25",
+  "version": "1.0.26",
   "description": "A Quick Setup Express API.",
   "main": "index.js",
   "scripts": {
