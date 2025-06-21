@@ -185,12 +185,16 @@ module.exports = ExampleRoute;
 
 ##### GENERAL
 
-| Variable        | Default                   | Description               |
-| --------------- | ------------------------- | ------------------------- |
-| `PORT`          | 8000                      | Server port               |
-| `MONGODB_URI`   | mongodb://localhost:27017 | MongoDB connection string |
-| `DATABASE_NAME` | example-db                | Database name             |
-| `NODE_ENV`      | development               | Runtime environment       |
+| Variable        | Default                   | Description                              |
+| --------------- | ------------------------- | ---------------------------------------- |
+| `PORT`          | 8000                      | Server port                              |
+| `MONGODB_URI`   | mongodb://localhost:27017 | MongoDB connection string                |
+| `DATABASE_NAME` | example-db                | Database name                            |
+| `NODE_ENV`      | development               | Runtime environment                      |
+| `STAGING_ENV`   | undefined                 | Runtime environment                      |
+| `STAGING_URL`   | undefined                 | URL for your staging client/frontend     |
+| `PROD_URL`      | undefined                 | URL for your production client/frontend  |
+| `DEV_URL`       | http://localhost:3000     | URL for your development client/frontend |
 
 ##### PAYMENTS (Using Payfast)
 

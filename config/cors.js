@@ -1,16 +1,10 @@
-const cors = (
-  options = {
-    PROD_URL: null,
-    STAGING_URL: null,
-    DEV_URL: null,
-  }
-) => {
+const cors = () => {
   if (process.env.STAGING_ENV) {
-    return options.STAGING_URL;
+    return process.env.STAGING_URL;
   } else if (process.env.NODE_ENV) {
-    return options.PROD_URL;
+    return process.env.PROD_URL;
   } else {
-    return options.DEV_URL || "http://localhost:3000";
+    return process.env.DEV_URL || "http://localhost:3000";
   }
 };
 
